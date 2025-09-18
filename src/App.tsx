@@ -14,10 +14,10 @@ const Features = lazy(() => import("./components/Features").then(m => ({ default
 const HowItWorks = lazy(() => import("./components/HowItWorks").then(m => ({ default: m.HowItWorks })));
 const Statistics = lazy(() => import("./components/Statistics").then(m => ({ default: m.Statistics })));
 const CallToAction = lazy(() => import("./components/CallToAction").then(m => ({ default: m.CallToAction })));
-//const UnifiedAuth = lazy(() => import("./components/UnifiedAuth").then(m => ({ default: m.UnifiedAuth })));
+const UnifiedAuth = lazy(() => import("./components/UnifiedAuth").then(m => ({ default: m.UnifiedAuth })));
 const UnifiedDashboard = lazy(() => import("./components/UnifiedDashboard").then(m => ({ default: m.UnifiedDashboard })));
 const Dashboard = lazy(() => import("./components/Dashboard").then(m => ({ default: m.Dashboard })));
-//const BloodBanks = lazy(() => import("./components/BloodBanks").then(m => ({ default: m.BloodBanks })));
+const BloodBanks = lazy(() => import("./components/BloodBanks").then(m => ({ default: m.BloodBanks })));
 const HowItWorksPage = lazy(() => import("./components/HowItWorksPage").then(m => ({ default: m.HowItWorksPage })));
 const FindDonorsPage = lazy(() => import("./components/FindDonorsPage").then(m => ({ default: m.FindDonorsPage })));
 const AboutPage = lazy(() => import("./components/AboutPage").then(m => ({ default: m.AboutPage })));
@@ -41,7 +41,7 @@ export default function App() {
   const [currentPage, setCurrentPage] = useState<'home' | 'auth' | 'dashboard' | 'donor-dashboard' | 'patient-dashboard' | 'how-it-works' | 'find-donors' | 'about' | 'profile-wizard'>('home');
   const [isCheckingSession, setIsCheckingSession] = useState(true);
   const [navigationHistory, setNavigationHistory] = useState<string[]>([]);
- // const [pendingUserEmail, setPendingUserEmail] = useState<string>(''); // For profile completion
+  const [pendingUserEmail, setPendingUserEmail] = useState<string>(''); // For profile completion
 
   // Emergency timeout to prevent infinite loading
   useEffect(() => {
@@ -155,24 +155,24 @@ export default function App() {
     setCurrentPage('about');
   };
 
-  // const handleAuthSuccess = () => {
-  //   // Check if user needs to complete profile (for demo, we'll assume new users do)
-  //   const demoProfile = localStorage.getItem('demo_profile');
-  //   if (demoProfile) {
-  //     const profile = JSON.parse(demoProfile);
-  //     setPendingUserEmail(profile.email);
+   const handleAuthSuccess = () => {
+     // Check if user needs to complete profile (for demo, we'll assume new users do)
+     const demoProfile = localStorage.getItem('demo_profile');
+     if (demoProfile) {
+       const profile = JSON.parse(demoProfile);
+       setPendingUserEmail(profile.email);
       
   //     // Check if profile is complete (demo logic)
-  //     const isProfileComplete = localStorage.getItem(`profile_complete_${profile.email}`);
-  //     if (!isProfileComplete) {
-  //       setCurrentPage('profile-wizard');
-  //       return;
-  //     }
-  //   }
+       const isProfileComplete = localStorage.getItem(`profile_complete_${profile.email}`);
+      if (!isProfileComplete) {
+         setCurrentPage('profile-wizard');
+         return;
+       }
+     }
     
-  //   setCurrentPage('dashboard');
-  //   setNavigationHistory(['dashboard']);
-  // };
+     setCurrentPage('dashboard');
+     setNavigationHistory(['dashboard']);
+   };
 
   const handleNavigateToDonorDashboard = () => {
     setNavigationHistory(prev => [...prev, 'donor-dashboard']);
@@ -198,23 +198,23 @@ export default function App() {
     }
   };
 
-  // const handleProfileComplete = (profileData: any) => {
-  //   console.log('Profile completed:', profileData);
+  const handleProfileComplete = (profileData: any) => {
+     console.log('Profile completed:', profileData);
     
   //   // Mark profile as complete for this user
-  //   localStorage.setItem(`profile_complete_${profileData.email}`, 'true');
-  //   localStorage.setItem(`profile_data_${profileData.email}`, JSON.stringify(profileData));
+     localStorage.setItem(`profile_complete_${profileData.email}`, 'true');
+     localStorage.setItem(`profile_data_${profileData.email}`, JSON.stringify(profileData));
     
-  //   setCurrentPage('dashboard');
-  //   setNavigationHistory(['dashboard']);
-  // };
+     setCurrentPage('dashboard');
+     setNavigationHistory(['dashboard']);
+   };
 
-  // const handleProfileSkip = () => {
+   const handleProfileSkip = () => {
   //   // Allow skipping profile completion but mark as skipped
-  //   localStorage.setItem(`profile_skipped_${pendingUserEmail}`, 'true');
-  //   setCurrentPage('dashboard');
-  //   setNavigationHistory(['dashboard']);
-  // };
+     localStorage.setItem(`profile_skipped_${pendingUserEmail}`, 'true');
+     setCurrentPage('dashboard');
+     setNavigationHistory(['dashboard']);
+   };
 
   const handleSignOut = async () => {
     // Clear session data immediately to prevent UI delays

@@ -252,13 +252,8 @@ export default function App() {
       <PerformanceOptimizer />
       <div className="min-h-screen bg-white">
         <Suspense fallback={<LoadingSpinner />}>
-{/*           {currentPage === 'profile-wizard' ? (
-            <ProfileCompletionWizard
-              onComplete={handleProfileComplete}
-              onSkip={handleProfileSkip}
-              userEmail={pendingUserEmail}
-            />
-          ) : currentPage === 'dashboard' ? ( */}
+      { currentPage === 'dashboard' ? ( 
+        
             <UnifiedDashboard 
               onSignOut={handleSignOut} 
               onNavigateToHome={handleNavigateToHome}

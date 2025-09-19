@@ -47,10 +47,10 @@ import { DonorBloodRequests } from "./DonorBloodRequests";
 import { NotificationCenter } from "./NotificationCenter";
 import { BloodRequestForm } from "./BloodRequestForm";
 import { AppointmentSystem } from "./AppointmentSystem";
-import { DonorAvailabilityCalendar } from "./DonorAvailabilityCalendar";
+//import { DonorAvailabilityCalendar } from "./DonorAvailabilityCalendar";
 import { DonorHomeDashboard } from "./DonorHomeDashboard";
 import { EmergencyDashboard } from "./EmergencyDashboard";
-import { DonationImpactDashboard } from "./DonationImpactDashboard";
+//import { DonationImpactDashboard } from "./DonationImpactDashboard";
 import { ReportingDashboard } from "./ReportingDashboard";
 import { DonationCertificateGenerator } from "./DonationCertificateGenerator";
 import { profile } from "../utils/supabase/client";
@@ -199,12 +199,7 @@ export function Dashboard({ userRole, onSignOut, onNavigateToHome }: DashboardPr
   // Calculate grid columns based on user role and available tabs
   const getTabsGridCols = () => {
     if (userRole === 'donor') {
-      return 'grid-cols-8'; // Home, Requests, Availability, History, Profile, Notifications, Impact, Certificates
-    } else if (userRole === 'clinic') {
-      return 'grid-cols-7'; // Home, New Request, History, Profile, Notifications, Emergency, Reports
-    } else {
-      return 'grid-cols-6'; // Home, New Request, History, Profile, Notifications, Reports
-    }
+      return 'grid-cols-6'; // Home, Requests, Availability, History, Profile, Notifications, Impact, Certificates
   };
   
   return (
@@ -475,12 +470,7 @@ export function Dashboard({ userRole, onSignOut, onNavigateToHome }: DashboardPr
               <span className="hidden sm:inline">{userRole === 'donor' ? 'Requests' : 'New Request'}</span>
             </TabsTrigger>
             
-            {userRole === 'donor' && (
-              <TabsTrigger value="availability" className="flex items-center gap-2">
-                <Calendar className="w-4 h-4" />
-                <span className="hidden sm:inline">Calendar</span>
-              </TabsTrigger>
-            )}
+            
             
             <TabsTrigger value="history" className="flex items-center gap-2">
               <Clock className="w-4 h-4" />
@@ -504,11 +494,7 @@ export function Dashboard({ userRole, onSignOut, onNavigateToHome }: DashboardPr
             
             {userRole === 'donor' && (
               <>
-                <TabsTrigger value="impact" className="flex items-center gap-2">
-                  <TrendingUp className="w-4 h-4" />
-                  <span className="hidden sm:inline">Impact</span>
-                </TabsTrigger>
-                
+                              
                 <TabsTrigger value="certificates" className="flex items-center gap-2">
                   <Award className="w-4 h-4" />
                   <span className="hidden sm:inline">Certificates</span>
@@ -548,11 +534,7 @@ export function Dashboard({ userRole, onSignOut, onNavigateToHome }: DashboardPr
             )}
           </TabsContent>
 
-          {userRole === 'donor' && (
-            <TabsContent value="availability">
-              <DonorAvailabilityCalendar />
-            </TabsContent>
-          )}
+        
 
           <TabsContent value="history">
             {userRole === 'donor' ? (
@@ -573,9 +555,7 @@ export function Dashboard({ userRole, onSignOut, onNavigateToHome }: DashboardPr
 
           {userRole === 'donor' && (
             <>
-              <TabsContent value="impact">
-                <DonationImpactDashboard userProfile={userProfile} />
-              </TabsContent>
+              
 
               <TabsContent value="certificates">
                 <DonationCertificateGenerator userProfile={userProfile} />

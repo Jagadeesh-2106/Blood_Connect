@@ -317,7 +317,7 @@ export function Dashboard({ userRole, onSignOut, onNavigateToHome }: DashboardPr
               
               {/* Second row - additional features */}
               <div className="grid grid-cols-3 gap-2 mb-4">
-                {userRole === 'donor' && (
+                {/* {userRole === 'donor' && (
                   <Button 
                     variant={activeTab === "availability" ? "default" : "ghost"}
                     className="flex flex-col items-center gap-1 h-auto py-3"
@@ -329,7 +329,7 @@ export function Dashboard({ userRole, onSignOut, onNavigateToHome }: DashboardPr
                     <Calendar className="w-5 h-5" />
                     <span className="text-xs">Calendar</span>
                   </Button>
-                )}
+                )} */}
                 <Button 
                   variant={activeTab === "history" ? "default" : "ghost"}
                   className="flex flex-col items-center gap-1 h-auto py-3"
@@ -364,7 +364,7 @@ export function Dashboard({ userRole, onSignOut, onNavigateToHome }: DashboardPr
               <div className="grid grid-cols-3 gap-2 mb-4">
                 {userRole === 'donor' && (
                   <>
-                    <Button 
+                    {/* <Button 
                       variant={activeTab === "impact" ? "default" : "ghost"}
                       className="flex flex-col items-center gap-1 h-auto py-3"
                       onClick={() => {
@@ -374,7 +374,7 @@ export function Dashboard({ userRole, onSignOut, onNavigateToHome }: DashboardPr
                     >
                       <TrendingUp className="w-5 h-5" />
                       <span className="text-xs">Impact</span>
-                    </Button>
+                    </Button> */}
                     <Button 
                       variant={activeTab === "certificates" ? "default" : "ghost"}
                       className="flex flex-col items-center gap-1 h-auto py-3"
@@ -578,7 +578,7 @@ export function Dashboard({ userRole, onSignOut, onNavigateToHome }: DashboardPr
       </div>
     </div>
   );
-}
+}}
 
 // Patient/Clinic Dashboard Component
 function PatientHomeDashboard({ userProfile, onNavigateToNewRequest, setActiveTab }: { 

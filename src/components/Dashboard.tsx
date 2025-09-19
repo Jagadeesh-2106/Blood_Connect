@@ -578,7 +578,7 @@ export function Dashboard({ userRole, onSignOut, onNavigateToHome }: DashboardPr
       </div>
     </div>
   );
-}}
+}
 
 // Patient/Clinic Dashboard Component
 function PatientHomeDashboard({ userProfile, onNavigateToNewRequest, setActiveTab }: { 

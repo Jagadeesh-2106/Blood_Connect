@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/card";
 import { Button } from "./ui/button";
 import { Badge } from "./ui/badge";
@@ -7,20 +7,7 @@ import { Input } from "./ui/input";
 import { Textarea } from "./ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 import { Switch } from "./ui/switch";
-import { 
-  User, 
-  Building2, 
-  MapPin, 
-  Phone, 
-  Mail, 
-  Edit3, 
-  Save, 
-  AlertTriangle,
-  Calendar,
-  Shield,
-  Settings,
-  X
-} from "lucide-react";
+import { User, Building2, MapPin, Phone, Mail, Edit3, Save, AlertTriangle, Calendar, Shield, Settings, X, Heart } from "lucide-react";
 import { toast } from "sonner@2.0.3";
 import { profile } from "../utils/supabase/client";
 
@@ -36,6 +23,27 @@ interface UserProfile {
   isAvailable?: boolean;
   organizationType?: string;
   organizationName?: string;
+  // Additional profile completion data
+  emergencyContact?: string;
+  emergencyPhone?: string;
+  occupation?: string;
+  address?: string;
+  pincode?: string;
+  allergies?: string;
+  medicalConditions?: string;
+  currentMedications?: string;
+  lastCheckup?: string;
+  donorType?: string;
+  preferredTime?: string;
+  maxTravelDistance?: string;
+  // New fields for enhancement
+  dateOfBirth?: string;
+  weight?: string;
+  emailNotifications?: boolean;
+  smsNotifications?: boolean;
+  pushNotifications?: boolean;
+  maxDistance?: number;
+  urgencyLevels?: string[];
 }
 
 interface ProfileSettingsProps {
@@ -53,36 +61,104 @@ export function ProfileSettings({ userProfile, onProfileUpdate }: ProfileSetting
     bloodType: userProfile.bloodType || '',
     isAvailable: userProfile.isAvailable || false,
     organizationName: userProfile.organizationName || '',
-    organizationType: userProfile.organizationType || ''
+    organizationType: userProfile.organizationType || '',
+    emergencyContact: userProfile.emergencyContact || '',
+    emergencyPhone: userProfile.emergencyPhone || '',
+    occupation: userProfile.occupation || '',
+    address: userProfile.address || '',
+    pincode: userProfile.pincode || '',
+    allergies: userProfile.allergies || '',
+    medicalConditions: userProfile.medicalConditions || '',
+    currentMedications: userProfile.currentMedications || '',
+    lastCheckup: userProfile.lastCheckup || '',
+    donorType: userProfile.donorType || '',
+    preferredTime: userProfile.preferredTime || '',
+    maxTravelDistance: userProfile.maxTravelDistance || '',
+    // New fields
+    dateOfBirth: userProfile.dateOfBirth || '',
+    weight: userProfile.weight || '',
+    emailNotifications: userProfile.emailNotifications ?? true,
+    smsNotifications: userProfile.smsNotifications ?? true,
+    pushNotifications: userProfile.pushNotifications ?? true,
+    maxDistance: userProfile.maxDistance || 25,
+    urgencyLevels: userProfile.urgencyLevels || ['critical', 'high']
   });
 
   const bloodTypes = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
   const organizationTypes = ['Hospital', 'Blood Bank', 'Clinic', 'Medical Center', 'Non-profit', 'Other'];
 
+  // Auto-populate form when userProfile changes
+  useEffect(() => {
+    setFormData({
+      fullName: userProfile.fullName,
+      phoneNumber: userProfile.phoneNumber,
+      location: userProfile.location,
+      bloodType: userProfile.bloodType || '',
+      isAvailable: userProfile.isAvailable || false,
+      organizationName: userProfile.organizationName || '',
+      organizationType: userProfile.organizationType || '',
+      emergencyContact: userProfile.emergencyContact || '',
+      emergencyPhone: userProfile.emergencyPhone || '',
+      occupation: userProfile.occupation || '',
+      address: userProfile.address || '',
+      pincode: userProfile.pincode || '',
+      allergies: userProfile.allergies || '',
+      medicalConditions: userProfile.medicalConditions || '',
+      currentMedications: userProfile.currentMedications || '',
+      lastCheckup: userProfile.lastCheckup || '',
+      donorType: userProfile.donorType || '',
+      preferredTime: userProfile.preferredTime || '',
+      maxTravelDistance: userProfile.maxTravelDistance || '',
+      dateOfBirth: userProfile.dateOfBirth || '',
+      weight: userProfile.weight || '',
+      emailNotifications: userProfile.emailNotifications ?? true,
+      smsNotifications: userProfile.smsNotifications ?? true,
+      pushNotifications: userProfile.pushNotifications ?? true,
+      maxDistance: userProfile.maxDistance || 25,
+      urgencyLevels: userProfile.urgencyLevels || ['critical', 'high']
+    });
+  }, [userProfile]);
+
   const handleSave = async () => {
     try {
       setIsLoading(true);
-      
       const updateData = {
         fullName: formData.fullName.trim(),
         phoneNumber: formData.phoneNumber.trim(),
         location: formData.location.trim(),
+        emergencyContact: formData.emergencyContact.trim(),
+        emergencyPhone: formData.emergencyPhone.trim(),
+        occupation: formData.occupation.trim(),
+        address: formData.address.trim(),
+        pincode: formData.pincode.trim(),
+        allergies: formData.allergies.trim(),
+        medicalConditions: formData.medicalConditions.trim(),
+        currentMedications: formData.currentMedications.trim(),
+        lastCheckup: formData.lastCheckup,
+        // New fields
+        dateOfBirth: formData.dateOfBirth,
+        weight: formData.weight,
+        emailNotifications: formData.emailNotifications,
+        smsNotifications: formData.smsNotifications,
+        pushNotifications: formData.pushNotifications,
+        maxDistance: formData.maxDistance,
+        urgencyLevels: formData.urgencyLevels,
         ...(userProfile.role === 'donor' && {
           bloodType: formData.bloodType,
-          isAvailable: formData.isAvailable
+          isAvailable: formData.isAvailable,
+          donorType: formData.donorType,
+          preferredTime: formData.preferredTime,
+          maxTravelDistance: formData.maxTravelDistance
         }),
         ...(userProfile.role === 'clinic' && {
           organizationName: formData.organizationName.trim(),
           organizationType: formData.organizationType
         })
       };
-
       const result = await profile.update(updateData);
-      
       if (result.error) {
         throw new Error(result.error);
       }
-
       setIsEditing(false);
       toast.success('Profile updated successfully!');
       onProfileUpdate();
@@ -102,7 +178,26 @@ export function ProfileSettings({ userProfile, onProfileUpdate }: ProfileSetting
       bloodType: userProfile.bloodType || '',
       isAvailable: userProfile.isAvailable || false,
       organizationName: userProfile.organizationName || '',
-      organizationType: userProfile.organizationType || ''
+      organizationType: userProfile.organizationType || '',
+      emergencyContact: userProfile.emergencyContact || '',
+      emergencyPhone: userProfile.emergencyPhone || '',
+      occupation: userProfile.occupation || '',
+      address: userProfile.address || '',
+      pincode: userProfile.pincode || '',
+      allergies: userProfile.allergies || '',
+      medicalConditions: userProfile.medicalConditions || '',
+      currentMedications: userProfile.currentMedications || '',
+      lastCheckup: userProfile.lastCheckup || '',
+      donorType: userProfile.donorType || '',
+      preferredTime: userProfile.preferredTime || '',
+      maxTravelDistance: userProfile.maxTravelDistance || '',
+      dateOfBirth: userProfile.dateOfBirth || '',
+      weight: userProfile.weight || '',
+      emailNotifications: userProfile.emailNotifications ?? true,
+      smsNotifications: userProfile.smsNotifications ?? true,
+      pushNotifications: userProfile.pushNotifications ?? true,
+      maxDistance: userProfile.maxDistance || 25,
+      urgencyLevels: userProfile.urgencyLevels || ['critical', 'high']
     });
     setIsEditing(false);
   };
@@ -117,27 +212,24 @@ export function ProfileSettings({ userProfile, onProfileUpdate }: ProfileSetting
               <Settings className="w-5 h-5" />
               <CardTitle>Profile Settings</CardTitle>
             </div>
-            {!isEditing ? (
-              <Button onClick={() => setIsEditing(true)} variant="outline" size="sm">
-                <Edit3 className="w-4 h-4 mr-2" />
-                Edit Profile
-              </Button>
-            ) : (
-              <div className="flex gap-2">
-                <Button onClick={handleSave} size="sm" disabled={isLoading}>
-                  <Save className="w-4 h-4 mr-2" />
-                  {isLoading ? 'Saving...' : 'Save Changes'}
+            <div className="flex gap-2">
+              {!isEditing ? (
+                <Button onClick={() => setIsEditing(true)} variant="outline" size="sm">
+                  <Edit3 className="w-4 h-4 mr-2" /> Edit Profile
                 </Button>
-                <Button onClick={handleCancel} variant="outline" size="sm" disabled={isLoading}>
-                  <X className="w-4 h-4 mr-2" />
-                  Cancel
-                </Button>
-              </div>
-            )}
+              ) : (
+                <>
+                  <Button onClick={handleSave} size="sm" disabled={isLoading}>
+                    <Save className="w-4 h-4 mr-2" /> {isLoading ? 'Saving...' : 'Save Changes'}
+                  </Button>
+                  <Button onClick={handleCancel} variant="outline" size="sm" disabled={isLoading}>
+                    <X className="w-4 h-4 mr-2" /> Cancel
+                  </Button>
+                </>
+              )}
+            </div>
           </div>
-          <CardDescription>
-            Manage your personal information and preferences
-          </CardDescription>
+          <CardDescription>Manage your personal information and preferences</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="flex items-center gap-6">
@@ -155,9 +247,7 @@ export function ProfileSettings({ userProfile, onProfileUpdate }: ProfileSetting
                 </Badge>
               </div>
               <p className="text-gray-600 mb-1">{userProfile.email}</p>
-              <p className="text-sm text-gray-500">
-                Member since {new Date(userProfile.createdAt).toLocaleDateString()}
-              </p>
+              <p className="text-sm text-gray-500">Member since {new Date(userProfile.createdAt).toLocaleDateString()}</p>
             </div>
           </div>
         </CardContent>
@@ -167,8 +257,7 @@ export function ProfileSettings({ userProfile, onProfileUpdate }: ProfileSetting
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <User className="w-5 h-5" />
-            Personal Information
+            <User className="w-5 h-5" /> Personal Information
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -178,56 +267,404 @@ export function ProfileSettings({ userProfile, onProfileUpdate }: ProfileSetting
               {isEditing ? (
                 <Input
                   value={formData.fullName}
-                  onChange={(e) => setFormData({...formData, fullName: e.target.value})}
+                  onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
                   placeholder="Enter your full name"
                 />
               ) : (
                 <p className="py-2 px-3 bg-gray-50 rounded-md">{userProfile.fullName}</p>
               )}
             </div>
-            
             <div className="space-y-2">
               <label className="text-sm font-medium">Email Address</label>
               <p className="py-2 px-3 bg-gray-50 rounded-md text-gray-600">{userProfile.email}</p>
               <p className="text-xs text-gray-500">Email cannot be changed</p>
             </div>
-
             <div className="space-y-2">
               <label className="text-sm font-medium">Phone Number</label>
               {isEditing ? (
                 <Input
                   value={formData.phoneNumber}
-                  onChange={(e) => setFormData({...formData, phoneNumber: e.target.value})}
+                  onChange={(e) => setFormData({ ...formData, phoneNumber: e.target.value })}
                   placeholder="Enter your phone number"
                 />
               ) : (
                 <p className="py-2 px-3 bg-gray-50 rounded-md">{userProfile.phoneNumber}</p>
               )}
             </div>
-
             <div className="space-y-2">
               <label className="text-sm font-medium">Location</label>
               {isEditing ? (
                 <Input
                   value={formData.location}
-                  onChange={(e) => setFormData({...formData, location: e.target.value})}
+                  onChange={(e) => setFormData({ ...formData, location: e.target.value })}
                   placeholder="Enter your location"
                 />
               ) : (
                 <p className="py-2 px-3 bg-gray-50 rounded-md">{userProfile.location}</p>
               )}
             </div>
+            {/* New: Date of Birth */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Date of Birth</label>
+              {isEditing ? (
+                <Input
+                  type="date"
+                  value={formData.dateOfBirth}
+                  onChange={(e) => setFormData({ ...formData, dateOfBirth: e.target.value })}
+                />
+              ) : (
+                <p className="py-2 px-3 bg-gray-50 rounded-md">{userProfile.dateOfBirth || 'Not specified'}</p>
+              )}
+            </div>
+            {/* New: Weight */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Weight (kg)</label>
+              {isEditing ? (
+                <Input
+                  type="number"
+                  value={formData.weight}
+                  onChange={(e) => setFormData({ ...formData, weight: e.target.value })}
+                  placeholder="Enter weight in kg"
+                />
+              ) : (
+                <p className="py-2 px-3 bg-gray-50 rounded-md">{userProfile.weight || 'Not specified'}</p>
+              )}
+            </div>
           </div>
         </CardContent>
       </Card>
+
+      {/* Additional Profile Details */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <MapPin className="w-5 h-5" /> Additional Details
+          </CardTitle>
+          <CardDescription>Extended profile information from registration</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Occupation</label>
+              {isEditing ? (
+                <Input
+                  value={formData.occupation}
+                  onChange={(e) => setFormData({ ...formData, occupation: e.target.value })}
+                  placeholder="Enter your occupation"
+                />
+              ) : (
+                <p className="py-2 px-3 bg-gray-50 rounded-md">{userProfile.occupation || 'Not specified'}</p>
+              )}
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium">PIN Code</label>
+              {isEditing ? (
+                <Input
+                  value={formData.pincode}
+                  onChange={(e) => setFormData({ ...formData, pincode: e.target.value })}
+                  placeholder="Enter PIN code"
+                  maxLength={6}
+                />
+              ) : (
+                <p className="py-2 px-3 bg-gray-50 rounded-md">{userProfile.pincode || 'Not specified'}</p>
+              )}
+            </div>
+            {/* New: Address (enhanced as textarea) */}
+            <div className="space-y-2 md:col-span-2">
+              <label className="text-sm font-medium">Complete Address</label>
+              {isEditing ? (
+                <Textarea
+                  value={formData.address}
+                  onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                  placeholder="Enter your complete address"
+                  rows={2}
+                />
+              ) : (
+                <p className="py-2 px-3 bg-gray-50 rounded-md">{userProfile.address || 'Not specified'}</p>
+              )}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Emergency Contact Information */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Phone className="w-5 h-5" /> Emergency Contact
+          </CardTitle>
+          <CardDescription>Emergency contact details for medical situations</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Emergency Contact Name</label>
+              {isEditing ? (
+                <Input
+                  value={formData.emergencyContact}
+                  onChange={(e) => setFormData({ ...formData, emergencyContact: e.target.value })}
+                  placeholder="Enter emergency contact name"
+                />
+              ) : (
+                <p className="py-2 px-3 bg-gray-50 rounded-md">{userProfile.emergencyContact || 'Not specified'}</p>
+              )}
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Emergency Contact Phone</label>
+              {isEditing ? (
+                <Input
+                  value={formData.emergencyPhone}
+                  onChange={(e) => setFormData({ ...formData, emergencyPhone: e.target.value })}
+                  placeholder="Enter emergency contact phone"
+                />
+              ) : (
+                <p className="py-2 px-3 bg-gray-50 rounded-md">{userProfile.emergencyPhone || 'Not specified'}</p>
+              )}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Medical Information */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Calendar className="w-5 h-5" /> Medical Information
+          </CardTitle>
+          <CardDescription>Medical details from your registration profile</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Known Allergies</label>
+              {isEditing ? (
+                <Textarea
+                  value={formData.allergies}
+                  onChange={(e) => setFormData({ ...formData, allergies: e.target.value })}
+                  placeholder="Enter known allergies or 'None'"
+                  rows={2}
+                />
+              ) : (
+                <p className="py-2 px-3 bg-gray-50 rounded-md">{userProfile.allergies || 'Not specified'}</p>
+              )}
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Medical Conditions</label>
+              {isEditing ? (
+                <Textarea
+                  value={formData.medicalConditions}
+                  onChange={(e) => setFormData({ ...formData, medicalConditions: e.target.value })}
+                  placeholder="Enter medical conditions or 'None'"
+                  rows={2}
+                />
+              ) : (
+                <p className="py-2 px-3 bg-gray-50 rounded-md">{userProfile.medicalConditions || 'Not specified'}</p>
+              )}
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Current Medications</label>
+              {isEditing ? (
+                <Textarea
+                  value={formData.currentMedications}
+                  onChange={(e) => setFormData({ ...formData, currentMedications: e.target.value })}
+                  placeholder="Enter current medications or 'None'"
+                  rows={2}
+                />
+              ) : (
+                <p className="py-2 px-3 bg-gray-50 rounded-md">{userProfile.currentMedications || 'Not specified'}</p>
+              )}
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Last Medical Checkup</label>
+              {isEditing ? (
+                <Input
+                  type="date"
+                  value={formData.lastCheckup}
+                  onChange={(e) => setFormData({ ...formData, lastCheckup: e.target.value })}
+                />
+              ) : (
+                <p className="py-2 px-3 bg-gray-50 rounded-md">
+                  {userProfile.lastCheckup ? new Date(userProfile.lastCheckup).toLocaleDateString() : 'Not specified'}
+                </p>
+              )}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* New: Notification Preferences */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Bell className="w-5 h-5" /> Notification Preferences
+          </CardTitle>
+          <CardDescription>Manage how you receive notifications</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-3">
+            <div className="flex items-center space-x-2">
+              <Switch
+                checked={formData.emailNotifications}
+                onCheckedChange={(checked) => setFormData({ ...formData, emailNotifications: checked })}
+                id="emailNotifications"
+                disabled={!isEditing}
+              />
+              <label htmlFor="emailNotifications" className="text-sm">
+                Email notifications for blood requests
+              </label>
+            </div>
+            <div className="flex items-center space-x-2">
+              <Switch
+                checked={formData.smsNotifications}
+                onCheckedChange={(checked) => setFormData({ ...formData, smsNotifications: checked })}
+                id="smsNotifications"
+                disabled={!isEditing}
+              />
+              <label htmlFor="smsNotifications" className="text-sm">
+                SMS notifications for urgent requests
+              </label>
+            </div>
+            <div className="flex items-center space-x-2">
+              <Switch
+                checked={formData.pushNotifications}
+                onCheckedChange={(checked) => setFormData({ ...formData, pushNotifications: checked })}
+                id="pushNotifications"
+                disabled={!isEditing}
+              />
+              <label htmlFor="pushNotifications" className="text-sm">
+                Browser push notifications
+              </label>
+            </div>
+          </div>
+          <div>
+            <label className="text-sm font-medium block mb-2">
+              Maximum Distance for Requests (km): {formData.maxDistance}
+            </label>
+            {isEditing ? (
+              <input
+                type="range"
+                min="5"
+                max="100"
+                step="5"
+                value={formData.maxDistance}
+                onChange={(e) => setFormData({ ...formData, maxDistance: parseInt(e.target.value) })}
+                className="w-full"
+              />
+            ) : (
+              <p className="py-2 px-3 bg-gray-50 rounded-md">{formData.maxDistance} km</p>
+            )}
+          </div>
+          <div className="space-y-2">
+            <label className="text-sm font-medium block mb-2">Urgency Levels</label>
+            {isEditing ? (
+              <Select
+                value={formData.urgencyLevels.join(',')}
+                onValueChange={(value) => setFormData({ ...formData, urgencyLevels: value.split(',') })}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select urgency levels" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="critical">Critical</SelectItem>
+                  <SelectItem value="high">High</SelectItem>
+                  <SelectItem value="medium">Medium</SelectItem>
+                  <SelectItem value="low">Low</SelectItem>
+                </SelectContent>
+              </Select>
+            ) : (
+              <p className="py-2 px-3 bg-gray-50 rounded-md">{formData.urgencyLevels.join(', ') || 'Not specified'}</p>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Donor Preferences (only for donors) */}
+      {userProfile.role === 'donor' && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Heart className="w-5 h-5" /> Donation Preferences
+            </CardTitle>
+            <CardDescription>Your donation preferences from registration</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Donor Type</label>
+                {isEditing ? (
+                  <Select
+                    value={formData.donorType}
+                    onValueChange={(value) => setFormData({ ...formData, donorType: value })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select donor type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="regular">Regular Donor</SelectItem>
+                      <SelectItem value="emergency">Emergency Donor</SelectItem>
+                      <SelectItem value="both">Both</SelectItem>
+                    </SelectContent>
+                  </Select>
+                ) : (
+                  <p className="py-2 px-3 bg-gray-50 rounded-md capitalize">{userProfile.donorType || 'Not specified'}</p>
+                )}
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Preferred Time</label>
+                {isEditing ? (
+                  <Select
+                    value={formData.preferredTime}
+                    onValueChange={(value) => setFormData({ ...formData, preferredTime: value })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select preferred time" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="morning">Morning (9 AM - 12 PM)</SelectItem>
+                      <SelectItem value="afternoon">Afternoon (12 PM - 4 PM)</SelectItem>
+                      <SelectItem value="evening">Evening (4 PM - 7 PM)</SelectItem>
+                      <SelectItem value="flexible">Flexible</SelectItem>
+                    </SelectContent>
+                  </Select>
+                ) : (
+                  <p className="py-2 px-3 bg-gray-50 rounded-md capitalize">{userProfile.preferredTime || 'Not specified'}</p>
+                )}
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Max Travel Distance</label>
+                {isEditing ? (
+                  <Select
+                    value={formData.maxTravelDistance}
+                    onValueChange={(value) => setFormData({ ...formData, maxTravelDistance: value })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select distance" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="5">Within 5 km</SelectItem>
+                      <SelectItem value="10">Within 10 km</SelectItem>
+                      <SelectItem value="20">Within 20 km</SelectItem>
+                      <SelectItem value="50">Within 50 km</SelectItem>
+                      <SelectItem value="any">Any distance</SelectItem>
+                    </SelectContent>
+                  </Select>
+                ) : (
+                  <p className="py-2 px-3 bg-gray-50 rounded-md">
+                    {userProfile.maxTravelDistance ? (userProfile.maxTravelDistance === 'any' ? 'Any distance' : `Within ${userProfile.maxTravelDistance} km`) : 'Not specified'}
+                  </p>
+                )}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Role-specific Information */}
       {userProfile.role === 'donor' && (
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Shield className="w-5 h-5" />
-              Donor Information
+              <Shield className="w-5 h-5" /> Donor Information
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -235,12 +672,15 @@ export function ProfileSettings({ userProfile, onProfileUpdate }: ProfileSetting
               <div className="space-y-2">
                 <label className="text-sm font-medium">Blood Type</label>
                 {isEditing ? (
-                  <Select value={formData.bloodType} onValueChange={(value) => setFormData({...formData, bloodType: value})}>
+                  <Select
+                    value={formData.bloodType}
+                    onValueChange={(value) => setFormData({ ...formData, bloodType: value })}
+                  >
                     <SelectTrigger>
                       <SelectValue placeholder="Select your blood type" />
                     </SelectTrigger>
                     <SelectContent>
-                      {bloodTypes.map(type => (
+                      {bloodTypes.map((type) => (
                         <SelectItem key={type} value={type}>{type}</SelectItem>
                       ))}
                     </SelectContent>
@@ -253,23 +693,20 @@ export function ProfileSettings({ userProfile, onProfileUpdate }: ProfileSetting
                   </div>
                 )}
               </div>
-
               <div className="space-y-2">
                 <label className="text-sm font-medium">Availability Status</label>
                 {isEditing ? (
                   <div className="flex items-center space-x-2 py-2">
                     <Switch
                       checked={formData.isAvailable}
-                      onCheckedChange={(checked) => setFormData({...formData, isAvailable: checked})}
+                      onCheckedChange={(checked) => setFormData({ ...formData, isAvailable: checked })}
                     />
-                    <span className="text-sm">
-                      {formData.isAvailable ? 'Available to donate' : 'Not available'}
-                    </span>
+                    <span className="text-sm">{formData.isAvailable ? 'Available to donate' : 'Not available'}</span>
                   </div>
                 ) : (
                   <div className="py-2 px-3 bg-gray-50 rounded-md">
-                    <Badge variant={userProfile.isAvailable ? "default" : "secondary"}>
-                      {userProfile.isAvailable ? "Available to Donate" : "Not Available"}
+                    <Badge variant={userProfile.isAvailable ? 'default' : 'secondary'}>
+                      {userProfile.isAvailable ? 'Available to Donate' : 'Not Available'}
                     </Badge>
                   </div>
                 )}
@@ -283,8 +720,7 @@ export function ProfileSettings({ userProfile, onProfileUpdate }: ProfileSetting
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Building2 className="w-5 h-5" />
-              Organization Information
+              <Building2 className="w-5 h-5" /> Organization Information
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -294,7 +730,7 @@ export function ProfileSettings({ userProfile, onProfileUpdate }: ProfileSetting
                 {isEditing ? (
                   <Input
                     value={formData.organizationName}
-                    onChange={(e) => setFormData({...formData, organizationName: e.target.value})}
+                    onChange={(e) => setFormData({ ...formData, organizationName: e.target.value })}
                     placeholder="Enter organization name"
                   />
                 ) : (
@@ -303,24 +739,24 @@ export function ProfileSettings({ userProfile, onProfileUpdate }: ProfileSetting
                   </p>
                 )}
               </div>
-
               <div className="space-y-2">
                 <label className="text-sm font-medium">Organization Type</label>
                 {isEditing ? (
-                  <Select value={formData.organizationType} onValueChange={(value) => setFormData({...formData, organizationType: value})}>
+                  <Select
+                    value={formData.organizationType}
+                    onValueChange={(value) => setFormData({ ...formData, organizationType: value })}
+                  >
                     <SelectTrigger>
                       <SelectValue placeholder="Select organization type" />
                     </SelectTrigger>
                     <SelectContent>
-                      {organizationTypes.map(type => (
+                      {organizationTypes.map((type) => (
                         <SelectItem key={type} value={type}>{type}</SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
                 ) : (
-                  <p className="py-2 px-3 bg-gray-50 rounded-md">
-                    {userProfile.organizationType || 'Not specified'}
-                  </p>
+                  <p className="py-2 px-3 bg-gray-50 rounded-md">{userProfile.organizationType || 'Not specified'}</p>
                 )}
               </div>
             </div>
@@ -332,12 +768,9 @@ export function ProfileSettings({ userProfile, onProfileUpdate }: ProfileSetting
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Shield className="w-5 h-5" />
-            Account Security
+            <Shield className="w-5 h-5" /> Account Security
           </CardTitle>
-          <CardDescription>
-            Manage your account security and privacy settings
-          </CardDescription>
+          <CardDescription>Manage your account security and privacy settings</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex items-center justify-between p-4 border rounded-lg">
@@ -345,19 +778,14 @@ export function ProfileSettings({ userProfile, onProfileUpdate }: ProfileSetting
               <h4 className="font-medium">Password</h4>
               <p className="text-sm text-gray-600">Last updated: Not available</p>
             </div>
-            <Button variant="outline" size="sm">
-              Change Password
-            </Button>
+            <Button variant="outline" size="sm">Change Password</Button>
           </div>
-          
           <div className="flex items-center justify-between p-4 border rounded-lg">
             <div>
               <h4 className="font-medium">Two-Factor Authentication</h4>
               <p className="text-sm text-gray-600">Add an extra layer of security</p>
             </div>
-            <Button variant="outline" size="sm">
-              Enable 2FA
-            </Button>
+            <Button variant="outline" size="sm">Enable 2FA</Button>
           </div>
         </CardContent>
       </Card>
@@ -366,12 +794,9 @@ export function ProfileSettings({ userProfile, onProfileUpdate }: ProfileSetting
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <AlertTriangle className="w-5 h-5" />
-            Data & Privacy
+            <AlertTriangle className="w-5 h-5" /> Data & Privacy
           </CardTitle>
-          <CardDescription>
-            Manage how your data is used and shared
-          </CardDescription>
+          <CardDescription>Manage how your data is used and shared</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex items-center justify-between p-4 border rounded-lg">
@@ -379,19 +804,14 @@ export function ProfileSettings({ userProfile, onProfileUpdate }: ProfileSetting
               <h4 className="font-medium">Download Your Data</h4>
               <p className="text-sm text-gray-600">Get a copy of your data</p>
             </div>
-            <Button variant="outline" size="sm">
-              Download Data
-            </Button>
+            <Button variant="outline" size="sm">Download Data</Button>
           </div>
-          
           <div className="flex items-center justify-between p-4 border rounded-lg border-red-200">
             <div>
               <h4 className="font-medium text-red-600">Delete Account</h4>
               <p className="text-sm text-gray-600">Permanently delete your account and data</p>
             </div>
-            <Button variant="destructive" size="sm">
-              Delete Account
-            </Button>
+            <Button variant="destructive" size="sm">Delete Account</Button>
           </div>
         </CardContent>
       </Card>
